@@ -14,6 +14,6 @@ dependencyResolutionManagement {
 	}
 }
 
-rootProject.name = "ComputeIt"
+rootProject.name = "Lambda"
 include(":app")
  

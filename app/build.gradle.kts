@@ -15,31 +15,10 @@ plugins {
 }
 
 android {
-	namespace = "elianfabian.computeit"
+	namespace = "elianfabian.lambda"
 	compileSdk = 34
-
-	signingConfigs {
-		create("production-release") {
-			val keystoreProperties = Properties().apply {
-				load(rootProject.file("keystore.properties").inputStream())
-			}
-			storeFile = file("../ComputeIt-keystore-2024-05-18.jks")
-			storePassword = keystoreProperties["StorePassword"] as String
-			keyAlias = keystoreProperties["KeyAlias"] as String
-			keyPassword = keystoreProperties["KeyPassword"] as String
-		}
-		getByName("debug") {
-			val keystoreProperties = Properties().apply {
-				load(rootProject.file("keystore.properties").inputStream())
-			}
-			storeFile = file("../debug-2024-06-23.keystore")
-			storePassword = keystoreProperties["DebugStorePassword"] as String
-			keyAlias = keystoreProperties["DebugKeyAlias"] as String
-			keyPassword = keystoreProperties["DebugKeyPassword"] as String
-		}
-	}
 	defaultConfig {
-		applicationId = "elianfabian.computeit"
+		applicationId = "elianfabian.lambda"
 		minSdk = 24
 		targetSdk = 34
 		versionCode = 1
@@ -67,13 +46,33 @@ android {
 			dimension = environmentDimension
 		}
 	}
+	signingConfigs {
+		create("production") {
+			val keystoreProperties = Properties().apply {
+				load(rootProject.file("keystore.properties").inputStream())
+			}
+			storeFile = file("../lambda-keystore-2074-10-20.jks")
+			storePassword = keystoreProperties["StorePassword"] as String
+			keyAlias = keystoreProperties["KeyAlias"] as String
+			keyPassword = keystoreProperties["KeyPassword"] as String
+		}
+		getByName("debug") {
+			val keystoreProperties = Properties().apply {
+				load(rootProject.file("keystore.properties").inputStream())
+			}
+			storeFile = file("../lambda-debug-keystore.jks")
+			storePassword = keystoreProperties["DebugStorePassword"] as String
+			keyAlias = keystoreProperties["DebugKeyAlias"] as String
+			keyPassword = keystoreProperties["DebugKeyPassword"] as String
+		}
+	}
 	buildTypes {
 		release {
 			isMinifyEnabled = false
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 
 			productFlavors.getByName("development").signingConfig = signingConfigs.getByName("debug")
-			productFlavors.getByName("production").signingConfig = signingConfigs.getByName("production-release")
+			productFlavors.getByName("production").signingConfig = signingConfigs.getByName("production")
 		}
 		debug {
 			applicationIdSuffix = ".debug"
@@ -184,12 +183,18 @@ fun BaseAppModuleExtension.setupBuildFields() {
 		}
 	}
 	applicationVariants.all {
-		val appName = "ComputeIt"
 		val flavor = productFlavors[0].name
 		val buildType = buildType.name
+		
+		
+		val appName = when (flavor) {
+			"production" -> "Lambda"
+			// Short app name for development builds
+			"development" -> "L"
+			else -> throw IllegalStateException("Unknown flavor: $flavor")
+		}
 
 		fun BaseVariant.appNameResForCurrentEnv(suffix: String = "") {
-
 			val buildTypeSuffix = if (buildType == "debug") ".debug" else ""
 			resValue("string", "env__AppName", "$appName$suffix$buildTypeSuffix")
 		}
